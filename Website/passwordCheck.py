@@ -1,0 +1,97 @@
+from flask import flash
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
+# from Website.models import PasswordHistory
+
+
+# Password length should be at least the min_len_val(10).
+def min_len(password, min_len_val=10):
+    if len(password) < min_len_val:
+        flash(f'Your password length is less than {min_len_val} characters.', category='error')
+        return False
+    else:
+        return True
+
+
+# Check if the password contains any of the common password dictionary.
+# https://cybernews.com/best-password-managers/most-common-passwords/
+def common_pass_list(password):
+    common_pass_dictionary = ["123456", "123456789", "qwerty", "password",
+                              "12345", "qwerty123", "1q2w3e", "12345678",
+                              "111111", "1234567890"]
+    for common in common_pass_dictionary:
+        if common in password:
+            flash(f'Your password contains a common known keyword : {common}.', category='error')
+            return False
+    return True
+
+
+# The password shouldn't be like any password that was used up till 3 changes ago.
+# Check if the new password is the same as any of the last three passwords.
+# If we are initializing a new user then we don't have password history. (user = None).
+def password_history(user, new_password):
+    return True
+    # if user is None:
+    #     return True
+    # else:
+    #     last_three_histories = PasswordHistory.query.filter_by(user_id=user.id).order_by(
+    #         PasswordHistory.timestamp.desc()).limit(3).all()
+    #     for pass_history in last_three_histories:
+    #         if verify_password(new_password, pass_history.password_hash):
+    #             flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
+    #             return False
+    #     return True
+
+
+# Password verifying with hash in log in.
+def verify_password(password, hashed_password):
+    return pbkdf2_sha256.verify(password, hashed_password)
+
+
+# Check if there is at least one special character.
+def special_char(password):
+    special_characters = "_+{}\":;'[]~!@#$%^&*()"
+    for special in special_characters:
+        if special in password:
+            return 1
+    return 0
+
+
+# Check if there is at least one lower case character.
+def lower_case(password):
+    for p in password:
+        if p.islower():
+            return 1
+    return 0
+
+
+# Check if there is at least one upper case character.
+def upper_case(password):
+    for p in password:
+        if p.isupper():
+            return 1
+    return 0
+
+
+# Check if there is at least one digit.
+def dig(password):
+    for p in password:
+        if p.isdigit():
+            return 1
+    return 0
+
+
+# 3 out of 4 check: [Upper case, Lower case, Digit, Special character]
+def three_out_of_four(password):
+    value = special_char(password) + lower_case(password) + upper_case(password) + dig(password)
+    if value < 3:
+        flash(f'Your password should contain at least 3 of the following options: '
+              f'[Upper case, Lower case, Digit, Special character]', category='error')
+        return False
+    else:
+        return True
+
+
+# Main check password function.
+def main_check(user, password):
+    return min_len(password) and three_out_of_four(password) and common_pass_list(password) and password_history(user,
+                                                                                                                 password)
