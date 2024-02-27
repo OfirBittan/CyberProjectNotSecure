@@ -6,6 +6,20 @@ from flask_session import Session
 
 app = Flask(__name__)
 mysql = MySQL(app)
+DATA_BASE_NAME = 'projectDB'
+
+
+def create_customers_table():
+    with app.app_context():
+        cur = mysql.connection.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS Customers ("
+                    "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    "email VARCHAR(150) UNIQUE, "
+                    "first_name VARCHAR(150), "
+                    "date DATETIME)"
+                    )
+        mysql.connection.commit()
+        cur.close()
 
 
 def create_password_history_table():
@@ -39,13 +53,22 @@ def create_users_table():
         cur.close()
 
 
+def create_database():
+    with app.app_context():
+        cur = mysql.connection.cursor()
+        cur.execute(f"CREATE DATABASE IF NOT EXISTS {DATA_BASE_NAME};")
+        mysql.connection.commit()
+        cur.close()
+
+
 def create_app():
     # Init app with Flask library.
     app.secret_key = 'hjshjhdjah kjshkjdhjs'
     app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'root'  # changed it
-    app.config['MYSQL_PASSWORD'] = 'Ofir1234@$'  # changed it
-    app.config['MYSQL_DB'] = 'mydatabase'
+    app.config['MYSQL_USER'] = 'your user'  # changed it
+    app.config['MYSQL_PASSWORD'] = 'your password'  # changed it
+    create_database()  # create DB in MySQL
+    app.config['MYSQL_DB'] = DATA_BASE_NAME
 
     # Init Flask-Mail to send random value for forgot password
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -73,5 +96,6 @@ def create_app():
     # Create table user in db
     create_users_table()
     create_password_history_table()
+    create_customers_table()
 
     return app

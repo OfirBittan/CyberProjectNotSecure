@@ -132,6 +132,7 @@ def handle_failed_login_over(user):
 @auth.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
+        session['email'] = None
         email = request.form.get('email')
         user = get_user_from_unique_key(email)
         if user:

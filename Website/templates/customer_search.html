@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block title %} Add Customer {% endblock %}
+{% block content %}
+{% autoescape false %}
+<form method="POST">
+    <br> <h3 align="center">Search Customer</h3>
+    <div class="form-group">
+        <label for="firstName">Search customer by first name</label>
+        <input
+                type="text"
+                class="form-control"
+                id="firstName"
+                name="firstName"
+                placeholder="Enter first name"
+        />
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button><br>
+        <br><div class="card">
+        <div class="card-header"><h3>Customer found</h3></div>
+        <div class="card-body">
+            {% if customer_search_num != 0 %}
+                {% if customer_search_num > 1 %}
+                <h6>Found more than 1 customer.</h6>
+                {% else %}
+                <h6>Found 1 customer.</h6>
+                {% endif %}
+            {% else %}
+                <h6>No customer found.</h6>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endautoescape %}
+{% endblock %}
+

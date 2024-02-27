@@ -3,7 +3,6 @@ from datetime import datetime
 
 
 class User:
-
     def __init__(self, email, password, first_name):
         self.email = email
         self.password = password
@@ -47,5 +46,20 @@ class PasswordHistory:
 
         cur.execute("INSERT INTO password_history (user_id, password, timestamp) VALUES (%s, %s, %s)",
                     (user_id, password_hash, datetime.utcnow()))
+        mysql.connection.commit()
+        cur.close()
+
+
+class Customers:
+    def __init__(self, email, first_name, date):
+        self.email = email
+        self.first_name = first_name
+        self.date = date
+
+    def add_new_customer(self):
+        cur = mysql.connection.cursor()
+        cur.execute(
+            "INSERT INTO Customers (email, first_name, date) VALUES (%s, %s, %s)",
+            (self.email, self.first_name, self.date))
         mysql.connection.commit()
         cur.close()

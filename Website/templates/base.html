@@ -25,7 +25,10 @@
       <div class="collapse navbar-collapse" id="navbar">
         <div class="navbar-nav">
           {% if logged_in %}
-          <a class="nav-item nav-link" id="home" href="/home">home</a>
+          <a class="nav-item nav-link" id="home" href="/home">Home</a>
+          <a class="nav-item nav-link" id="customer_add" href="/customer_add">Add Customer</a>
+          <a class="nav-item nav-link" id="customer_search" href="/customer_search">Customer search</a>
+          <a class="nav-item nav-link" id="customers_list" href="/customers_list">Customers list</a>
           <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
           {% else %}
           <a class="nav-item nav-link" id="start" href="/">Start</a>
