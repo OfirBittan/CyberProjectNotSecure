@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %} Enter Code {% endblock %}
+{% block content %}
+{% autoescape false %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Enter Code</div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="code">Enter the code you received:</label>
+                            <input type="text" class="form-control" id="code" name="code" placeholder="Enter code">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endautoescape %}
+{% endblock %}

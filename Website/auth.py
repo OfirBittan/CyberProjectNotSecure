@@ -1,13 +1,18 @@
+import hashlib
+import random
+
 from flask import Blueprint, request, flash, render_template, redirect, url_for, session
 from datetime import datetime, timedelta
 from passlib.hash import pbkdf2_sha256
+from flask_mail import Message, Mail
 from . import mysql, passwordCheck
-from .models import User
+from .models import User, PasswordHistory
 import MySQLdb.cursors
 import os
 
 MAX_LOGIN_ATTEMPTS = 3  # Max num of login attempts before blocking user.
 BLOCK_DURATION = 1  # Minutes of user being blocked.
+mail = Mail()
 auth = Blueprint('auth', __name__)
 
 
@@ -60,8 +65,8 @@ def sign_up():
                 hashed_password = generate_password_hash(password1)
                 new_user = User(email=email, password=hashed_password, first_name=first_name)
                 new_user.add_new_user()
+                PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], hashed_password)
                 session['email'] = email
-                # Add to table Password history the first password created.
                 flash('Account created!', category='success')
                 return redirect(url_for('views.home'))
     return render_template("sign_up.html", logged_in=False)
@@ -116,5 +121,97 @@ def handle_failed_login_over(user):
                 "block_expiration = %s WHERE email = %s",
                 (user['login_attempts'], user['last_failed_attempt'], user['is_blocked'],
                  user['block_expiration'], user['email']))
+    mysql.connection.commit()
+    cur.close()
+
+
+# Forgot password function:
+# generate random,
+# send it via email,
+# store the code in the session or database for verification later.
+@auth.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = get_user_from_unique_key(email)
+        if user:
+            code = generate_random_code()
+            send_reset_code_email(email, code)
+            session['reset_code_hash'] = hashlib.sha1(code.encode()).hexdigest()
+            flash('A code has been sent to your email. Please check your inbox.', category='success')
+            return redirect(url_for('auth.verify_code_from_mail', email=email))
+        else:
+            flash('Email does not exist.', category='error')
+    return render_template("forgot_password.html", logged_in=False)
+
+
+# Verify code from mail function.
+@auth.route('/verify_code_from_mail', methods=['GET', 'POST'])
+def verify_code_from_mail():
+    email = request.args.get('email')
+    if request.method == 'POST':
+        code = request.form.get('code')
+        if verify_code(code):
+            return redirect(url_for('auth.reset_password', email=email))
+        else:
+            flash('Invalid code. Please try again.', category='error')
+    return render_template("code_input.html", logged_in=False)
+
+
+# Reset password function:
+# after entering correct code from email go to the reset password screen.
+# entering new password that will be saved in the db after hashing.
+@auth.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        email = request.args.get('email')
+        new_password = request.form.get('newPassword')
+        confirm_password = request.form.get('confirmPassword')
+        user = get_user_from_unique_key(email)
+        if user:
+            if new_password != confirm_password:
+                flash('Passwords do not match.', category='error')
+            else:
+                if passwordCheck.main_check(user, new_password):
+                    hashed_new_password = generate_password_hash(new_password)
+                    change_password(email, user, hashed_new_password)
+                    flash('Password changed successfully!', category='success')
+                    return redirect(url_for('auth.login'))
+        else:
+            flash('Email does not exist.', category='error')
+    return render_template("reset_password.html", logged_in=False)
+
+
+# Generate a random code using SHA-1 for email.
+def generate_random_code():
+    random_code = str(random.randint(10000, 99999))
+    hashed_code = hashlib.sha1(random_code.encode()).hexdigest()
+    return hashed_code
+
+
+# Send code to email.
+def send_reset_code_email(email, code):
+    msg = Message('Reset Your Password', recipients=[email])
+    msg.body = f'Your reset password code is: {code}'
+    mail.send(msg)
+
+
+# Check that the code the user entered is the same as the one was sent to it's mail.
+def verify_code(code):
+    stored_code_hash = session.get('reset_code_hash')
+    if stored_code_hash:
+        # Filter the VerificationCode model by user_id and code
+        entered_code_hash = hashlib.sha1(code.encode()).hexdigest()
+        if entered_code_hash == stored_code_hash:
+            return True
+    return False
+
+
+# Changing password in db and parameter.
+def change_password(email, user, hashed_new_password):
+    user['password'] = hashed_new_password
+    PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], hashed_new_password)
+    cur = mysql.connection.cursor()
+    cur.execute("UPDATE users SET password = %s WHERE email = %s", (user['password'], user['email']))
     mysql.connection.commit()
     cur.close()

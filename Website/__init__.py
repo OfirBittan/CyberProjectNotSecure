@@ -8,7 +8,21 @@ app = Flask(__name__)
 mysql = MySQL(app)
 
 
-def create_table_users():
+def create_password_history_table():
+    with app.app_context():
+        cur = mysql.connection.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS password_history ("
+                    "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    "user_id INT NOT NULL, "
+                    "password VARCHAR(100) NOT NULL, "
+                    "timestamp DATETIME NOT NULL, "
+                    "FOREIGN KEY (user_id) REFERENCES users(id))"
+                    )
+        mysql.connection.commit()
+        cur.close()
+
+
+def create_users_table():
     with app.app_context():
         cur = mysql.connection.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS users ("
@@ -19,7 +33,8 @@ def create_table_users():
                     "login_attempts INT DEFAULT 0, "
                     "last_failed_attempt DATETIME, "
                     "is_blocked BOOLEAN DEFAULT FALSE, "
-                    "block_expiration DATETIME)")
+                    "block_expiration DATETIME)"
+                    )
         mysql.connection.commit()
         cur.close()
 
@@ -56,6 +71,7 @@ def create_app():
     app.register_blueprint(auth, url_prefix='/')
 
     # Create table user in db
-    create_table_users()
+    create_users_table()
+    create_password_history_table()
 
     return app

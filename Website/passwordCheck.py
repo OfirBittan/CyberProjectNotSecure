@@ -1,6 +1,6 @@
 from flask import flash
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-# from Website.models import PasswordHistory
+from . import mysql
 
 
 # Password length should be at least the min_len_val(10).
@@ -29,17 +29,19 @@ def common_pass_list(password):
 # Check if the new password is the same as any of the last three passwords.
 # If we are initializing a new user then we don't have password history. (user = None).
 def password_history(user, new_password):
-    return True
-    # if user is None:
-    #     return True
-    # else:
-    #     last_three_histories = PasswordHistory.query.filter_by(user_id=user.id).order_by(
-    #         PasswordHistory.timestamp.desc()).limit(3).all()
-    #     for pass_history in last_three_histories:
-    #         if verify_password(new_password, pass_history.password_hash):
-    #             flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
-    #             return False
-    #     return True
+    if user is None:
+        return True
+    else:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT password FROM password_history WHERE user_id = %s", (user['id'],))
+        last_three_histories = cur.fetchall()
+
+        for item in last_three_histories:
+            for value in item:
+                if verify_password(new_password, value):
+                    flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
+                    return False
+        return True
 
 
 # Password verifying with hash in log in.
