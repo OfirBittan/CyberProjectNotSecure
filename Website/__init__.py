@@ -28,8 +28,8 @@ def create_app():
     # Init app with Flask library.
     app.secret_key = 'hjshjhdjah kjshkjdhjs'
     app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'user_name'  # change it
-    app.config['MYSQL_PASSWORD'] = 'password'  # change it
+    app.config['MYSQL_USER'] = 'root'  # changed it
+    app.config['MYSQL_PASSWORD'] = 'Ofir1234@$'  # changed it
     app.config['MYSQL_DB'] = 'mydatabase'
 
     # Init Flask-Mail to send random value for forgot password
