@@ -74,15 +74,18 @@ def search_customer():
     if request.method == 'POST':
         first_name = request.form.get('firstName')
         customer = get_customer_from_name(first_name)
-        if len(customer) != 0:
-            return render_template('customer_search.html', logged_in=True, customer_search_num=len(customer))
-    return render_template('customer_search.html', logged_in=True, customer_search_num=0)
+        print(customer)
+        return render_template('customer_search.html', logged_in=True, customer=customer)
+    return render_template('customer_search.html', logged_in=True, customer=None)
 
 
 # Get customer name if exists.
 def get_customer_from_name(first_name):
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM Customers WHERE BINARY first_name = %s;", (first_name,))
-    customers = cur.fetchall()
-    cur.close()
-    return [row[0] for row in customers]
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute(f"SELECT * FROM Customers WHERE BINARY first_name = '{first_name}';")
+        customers = cur.fetchall()
+        cur.close()
+        return customers
+    except Exception as e:
+        flash(f"An error occurred: {e}", category='error')
