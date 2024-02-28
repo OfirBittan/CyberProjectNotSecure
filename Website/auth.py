@@ -88,7 +88,6 @@ def get_user_from_unique_key(email):
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute(f"SELECT * FROM users WHERE email = '{email}' LIMIT 1;")
     user = cur.fetchone()
-    print(user)
     return user
 
 

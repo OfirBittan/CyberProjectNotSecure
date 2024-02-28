@@ -7,17 +7,20 @@ import datetime
 views = Blueprint('views', __name__)
 
 
+# Start page function:
 @views.route('/')
 def start():
     return render_template('start.html', logged_in=False)
 
 
+# Logout.
 @views.route('/logout')
 def logout():
     session['email'] = None
     return redirect(url_for('auth.login'))
 
 
+# Home page function:
 @views.route('/home', methods=['GET', 'POST'])
 def home():
     return render_template('home.html', logged_in=True)
@@ -46,7 +49,6 @@ def get_customer_from_unique_key(email):
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute(f"SELECT * FROM customers WHERE email = '{email}' LIMIT 1;")
     customer = cur.fetchone()
-    print(customer)
     return customer
 
 
@@ -62,7 +64,6 @@ def get_all_customers():
     cur.execute("SELECT first_name FROM Customers;")
     first_names = cur.fetchall()
     cur.close()
-    print(first_names)
     return [row[0] for row in first_names]
 
 
@@ -73,7 +74,6 @@ def search_customer():
     if request.method == 'POST':
         first_name = request.form.get('firstName')
         customer = get_customer_from_name(first_name)
-        print(len(customer))
         if len(customer) != 0:
             return render_template('customer_search.html', logged_in=True, customer_search_num=len(customer))
     return render_template('customer_search.html', logged_in=True, customer_search_num=0)
