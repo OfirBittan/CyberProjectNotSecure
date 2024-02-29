@@ -3,6 +3,7 @@ from .models import User, PasswordHistory
 from datetime import datetime, timedelta
 from flask_mail import Message, Mail
 from . import mysql, passwordCheck
+from hashlib import sha256
 import MySQLdb.cursors
 import hashlib
 import random
@@ -34,7 +35,8 @@ def login():
         password = request.form.get('password')
         user = get_user_from_unique_key(email)
         if user:
-            if get_user_from_email_and_password(email, password):  # Checks if the user exists according to email.
+            if get_user_from_email_and_password(email, encode_password(
+                    password)):  # Checks if the user exists according to email.
                 # Checks if the user blocked after 3 attempts and still on 1 ,minute block.
                 if user['is_blocked']:
                     if user['block_expiration'] > datetime.utcnow():
@@ -71,13 +73,23 @@ def sign_up():
             flash('Passwords do not match.', category='error')
         else:
             if passwordCheck.main_check(None, password1):
-                new_user = User(email=email, password=password1, first_name=first_name)
+                hash_pass = encode_password(password1)
+                new_user = User(email=email, password=hash_pass, first_name=first_name)
                 new_user.add_new_user()
-                PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], password1)
+                PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], hash_pass)
                 session['email'] = email
                 flash('Account created!', category='success')
                 return redirect(url_for('views.home'))
     return render_template("sign_up.html", logged_in=False)
+
+
+# Encode with hash256 not secure enough without salt for this not secure part of the project.
+def encode_password(password):
+    # Convert the password to bytes
+    password_bytes = password.encode('utf-8')
+    # Hash the password using SHA-256
+    hashed_password = sha256(password_bytes).hexdigest()
+    return hashed_password
 
 
 # Get user full detail according to it's email.
@@ -175,7 +187,7 @@ def reset_password():
                 flash('Passwords do not match.', category='error')
             else:
                 if passwordCheck.main_check(user, new_password):
-                    change_password(email, user, new_password)
+                    change_password(email, user, encode_password(new_password))
                     flash('Password changed successfully!', category='success')
                     return redirect(url_for('auth.login'))
         else:

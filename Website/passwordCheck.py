@@ -1,3 +1,4 @@
+from hashlib import sha256
 from flask import flash
 from . import mysql
 
@@ -35,11 +36,20 @@ def password_history(user, new_password):
         cur.execute("SELECT password FROM password_history WHERE user_id = %s;", (user['id'],))
         last_three_histories = cur.fetchall()
         for item in last_three_histories:
+            print(item)
             for value in item:
-                if new_password == value:
+                if verify_password(new_password, value):
                     flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
                     return False
         return True
+
+
+# verify password with hash256 not secure enough without salt for this not secure part of the project.
+def verify_password(entered_password, hashed_password):
+    # Hash the entered password
+    entered_password_hashed = sha256(entered_password.encode('utf-8')).hexdigest()
+    # Compare the entered password hash with the stored hashed password
+    return entered_password_hashed == hashed_password
 
 
 # Check if there is at least one special character.
