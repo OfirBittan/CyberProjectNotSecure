@@ -1,5 +1,4 @@
 from flask import flash
-from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from . import mysql
 
 
@@ -35,18 +34,12 @@ def password_history(user, new_password):
         cur = mysql.connection.cursor()
         cur.execute("SELECT password FROM password_history WHERE user_id = %s", (user['id'],))
         last_three_histories = cur.fetchall()
-
         for item in last_three_histories:
             for value in item:
-                if verify_password(new_password, value):
+                if new_password == value:
                     flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
                     return False
         return True
-
-
-# Password verifying with hash in log in.
-def verify_password(password, hashed_password):
-    return pbkdf2_sha256.verify(password, hashed_password)
 
 
 # Check if there is at least one special character.

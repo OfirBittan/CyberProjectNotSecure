@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
 from .models import Customers
-import MySQLdb.cursors
 from . import mysql
 import datetime
 
@@ -46,7 +45,7 @@ def add_customer():
 
 # Get customer full detail according to it's email.
 def get_customer_from_unique_key(email):
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur = mysql.connection.cursor()
     cur.execute(f"SELECT * FROM customers WHERE email = '{email}' LIMIT 1;")
     customer = cur.fetchone()
     return customer
@@ -73,14 +72,13 @@ def get_all_customers():
 def search_customer():
     if request.method == 'POST':
         first_name = request.form.get('firstName')
-        customer = get_customer_from_name(first_name)
-        print(customer)
+        customer = get_customer_from_first_name(first_name)
         return render_template('customer_search.html', logged_in=True, customer=customer)
     return render_template('customer_search.html', logged_in=True, customer=None)
 
 
 # Get customer name if exists.
-def get_customer_from_name(first_name):
+def get_customer_from_first_name(first_name):
     try:
         cur = mysql.connection.cursor()
         cur.execute(f"SELECT * FROM Customers WHERE BINARY first_name = '{first_name}';")
