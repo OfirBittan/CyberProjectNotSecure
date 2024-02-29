@@ -16,7 +16,7 @@ def create_customers_table():
                     "id INT AUTO_INCREMENT PRIMARY KEY, "
                     "email VARCHAR(150) UNIQUE, "
                     "first_name VARCHAR(150), "
-                    "date DATETIME)"
+                    "date DATETIME);"
                     )
         mysql.connection.commit()
         cur.close()
@@ -30,7 +30,7 @@ def create_password_history_table():
                     "user_id INT NOT NULL, "
                     "password VARCHAR(100) NOT NULL, "
                     "timestamp DATETIME NOT NULL, "
-                    "FOREIGN KEY (user_id) REFERENCES users(id))"
+                    "FOREIGN KEY (user_id) REFERENCES users(id));"
                     )
         mysql.connection.commit()
         cur.close()
@@ -47,7 +47,7 @@ def create_users_table():
                     "login_attempts INT DEFAULT 0, "
                     "last_failed_attempt DATETIME, "
                     "is_blocked BOOLEAN DEFAULT FALSE, "
-                    "block_expiration DATETIME)"
+                    "block_expiration DATETIME);"
                     )
         mysql.connection.commit()
         cur.close()

@@ -32,7 +32,7 @@ def password_history(user, new_password):
         return True
     else:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT password FROM password_history WHERE user_id = %s", (user['id'],))
+        cur.execute("SELECT password FROM password_history WHERE user_id = %s;", (user['id'],))
         last_three_histories = cur.fetchall()
         for item in last_three_histories:
             for value in item:

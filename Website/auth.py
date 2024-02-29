@@ -3,6 +3,7 @@ from .models import User, PasswordHistory
 from datetime import datetime, timedelta
 from flask_mail import Message, Mail
 from . import mysql, passwordCheck
+import MySQLdb.cursors
 import hashlib
 import random
 
@@ -82,7 +83,7 @@ def sign_up():
 # Get user full detail according to it's email.
 def get_user_from_unique_key(email):
     try:
-        cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute(f"SELECT * FROM users WHERE email = '{email}' LIMIT 1;")
         user = cur.fetchone()
         return user
@@ -212,6 +213,6 @@ def change_password(email, user, new_password):
     user['password'] = new_password
     PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], new_password)
     cur = mysql.connection.cursor()
-    cur.execute("UPDATE users SET password = %s WHERE email = %s", (user['password'], user['email']))
+    cur.execute("UPDATE users SET password = %s WHERE email = %s;", (user['password'], user['email']))
     mysql.connection.commit()
     cur.close()

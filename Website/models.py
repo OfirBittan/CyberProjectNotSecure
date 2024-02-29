@@ -17,7 +17,7 @@ class User:
         cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO users (email, password, first_name, login_attempts, last_failed_attempt, "
-            "is_blocked, block_expiration) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "is_blocked, block_expiration) VALUES (%s, %s, %s, %s, %s, %s, %s);",
             (self.email, self.password, self.first_name, self.login_attempts,
              self.last_failed_attempt, self.is_blocked, self.block_expiration))
         mysql.connection.commit()
@@ -37,14 +37,14 @@ class PasswordHistory:
     @staticmethod
     def save_password_history(user_id, password_hash):
         cur = mysql.connection.cursor()
-        cur.execute("SELECT id FROM password_history WHERE user_id = %s ORDER BY timestamp DESC LIMIT 3", (user_id,))
+        cur.execute("SELECT id FROM password_history WHERE user_id = %s ORDER BY timestamp DESC LIMIT 3;", (user_id,))
         last_three_histories = cur.fetchall()
 
         if len(last_three_histories) == 3:
-            cur.execute("DELETE FROM password_history WHERE id = %s", (last_three_histories[-1]))
+            cur.execute("DELETE FROM password_history WHERE id = %s;", (last_three_histories[-1]))
             mysql.connection.commit()
 
-        cur.execute("INSERT INTO password_history (user_id, password, timestamp) VALUES (%s, %s, %s)",
+        cur.execute("INSERT INTO password_history (user_id, password, timestamp) VALUES (%s, %s, %s);",
                     (user_id, password_hash, datetime.utcnow()))
         mysql.connection.commit()
         cur.close()
@@ -59,7 +59,7 @@ class Customers:
     def add_new_customer(self):
         cur = mysql.connection.cursor()
         cur.execute(
-            "INSERT INTO Customers (email, first_name, date) VALUES (%s, %s, %s)",
+            "INSERT INTO Customers (email, first_name, date) VALUES (%s, %s, %s);",
             (self.email, self.first_name, self.date))
         mysql.connection.commit()
         cur.close()
