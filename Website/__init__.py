@@ -65,8 +65,8 @@ def create_app():
     # Init app with Flask library.
     app.secret_key = 'hjshjhdjah kjshkjdhjs'
     app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'root'  # changed it
-    app.config['MYSQL_PASSWORD'] = 'Ofir1234@$'  # changed it
+    app.config['MYSQL_USER'] = 'your user'  # changed it
+    app.config['MYSQL_PASSWORD'] = 'your password'  # changed it
     create_database()  # create DB in MySQL
     app.config['MYSQL_DB'] = DATA_BASE_NAME
 
