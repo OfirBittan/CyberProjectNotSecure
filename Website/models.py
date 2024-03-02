@@ -1,5 +1,6 @@
 from . import mysql
 from datetime import datetime
+from flask import flash
 
 
 class User:
@@ -14,14 +15,17 @@ class User:
         self.stored_code_hash = None
 
     def add_new_user(self):
-        cur = mysql.connection.cursor()
-        cur.execute(
-            "INSERT INTO users (email, password, first_name, login_attempts, last_failed_attempt, "
-            "is_blocked, block_expiration) VALUES (%s, %s, %s, %s, %s, %s, %s);",
-            (self.email, self.password, self.first_name, self.login_attempts,
-             self.last_failed_attempt, self.is_blocked, self.block_expiration))
-        mysql.connection.commit()
-        cur.close()
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute(
+                "INSERT INTO users (email, password, first_name, login_attempts, last_failed_attempt, "
+                "is_blocked, block_expiration) VALUES (%s, %s, %s, %s, %s, %s, %s);",
+                (self.email, self.password, self.first_name, self.login_attempts,
+                 self.last_failed_attempt, self.is_blocked, self.block_expiration))
+            mysql.connection.commit()
+            cur.close()
+        except Exception as e:
+            flash(f"An error occurred: {e}", category='error')
 
 
 # PasswordHistory db table saves for every user the last 3 passwords history.

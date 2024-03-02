@@ -79,7 +79,7 @@ def sign_up():
                 PasswordHistory.save_password_history(get_user_from_unique_key(email)['id'], hash_pass)
                 session['email'] = email
                 flash('Account created!', category='success')
-                return redirect(url_for('views.home'))
+                return redirect(url_for('auth.login'))
     return render_template("sign_up.html", logged_in=False)
 
 
