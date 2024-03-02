@@ -36,7 +36,6 @@ def password_history(user, new_password):
         cur.execute("SELECT password FROM password_history WHERE user_id = %s;", (user['id'],))
         last_three_histories = cur.fetchall()
         for item in last_three_histories:
-            print(item)
             for value in item:
                 if verify_password(new_password, value):
                     flash(f'Your new password is the same as one of the last 3 password you had.', category='error')
